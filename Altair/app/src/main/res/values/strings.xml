@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">Altair</string>
+
+    <string name="default_web_client_id">
+        289358718320-b7tosk41eagiteug2ft59mc6vs8lpprs.apps.googleusercontent.com
+    </string>
+
+    <string name="cd_toggle_filters">Show/hide filters</string>
+
+    <string name="title_osiptel_coverage">OSIPTEL Coverage</string>
+
+    <string name="chip_2g">2G</string>
+    <string name="chip_3g">3G</string>
+    <string name="chip_4g">4G</string>
+    <string name="chip_5g">5G</string>
+
+    <string name="nav_stats">Stats</string>
+    <string name="nav_home">Home</string>
+
+    <string name="op_movistar">Movistar</string>
+    <string name="op_claro">Claro</string>
+    <string name="op_entel">Entel</string>
+    <string name="op_bitel">Bitel</string>
+
+    <string name="label_signal_now">Current signal</string>
+    <string name="signal_placeholder">Operator: —   Tech: —   RSRP/RSSI: —</string>
+
+    <string name="legend_dbm">Legend (dBm)</string>
+    <string name="legend_excellent">≥ -75 (Excellent)</string>
+    <string name="legend_good">-95 to -76 (Good)</string>
+    <string name="legend_regular">-105 to -96 (Fair)</string>
+    <string name="legend_bad">&lt; -105 (Poor)</string>
+
+    <string name="measurement">Measurement</string>
+</resources>
