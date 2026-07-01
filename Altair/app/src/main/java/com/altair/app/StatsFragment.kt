@@ -111,8 +111,6 @@ class StatsFragment : Fragment(R.layout.fragment_stats) {
             val checkedId = checkedIds.firstOrNull()
 
             selectedTech = when (checkedId) {
-                R.id.chip2g -> "2G"
-                R.id.chip3g -> "3G"
                 R.id.chip4g -> "4G"
                 R.id.chip5g -> "5G"
                 else -> DEFAULT_TECH
@@ -182,11 +180,8 @@ class StatsFragment : Fragment(R.layout.fragment_stats) {
     private fun clearLocalData() {
         val ctx = requireContext()
 
-        ctx.stopService(Intent(ctx, LocalMeasurementService::class.java))
-        ServiceStateStore.setLocalRunning(ctx, false)
-
         ctx.stopService(Intent(ctx, ForegroundMeasurementService::class.java))
-        ServiceStateStore.setFirebaseRunning(ctx, false)
+        ServiceStateStore.setMeasurementRunning(ctx, false)
 
         LocalTrackStore.clear(ctx)
 

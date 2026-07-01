@@ -5,7 +5,6 @@ import android.os.SystemClock
 import android.telephony.CellInfo
 import android.telephony.CellSignalStrengthLte
 import android.telephony.CellSignalStrengthNr
-import kotlin.math.sqrt
 
 object RadioKpiUtils {
 
@@ -145,54 +144,5 @@ object RadioKpiUtils {
         sinr: Double?
     ): Boolean {
         return rsrp != null || rsrq != null || rssi != null || sinr != null
-    }
-
-    // =========================
-    // Estadísticos para ventana
-    // =========================
-
-    fun mean(values: List<Double>): Double? {
-        if (values.isEmpty()) return null
-        return values.average()
-    }
-
-    fun median(values: List<Double>): Double? {
-        if (values.isEmpty()) return null
-
-        val sorted = values.sorted()
-        val n = sorted.size
-
-        return if (n % 2 == 1) {
-            sorted[n / 2]
-        } else {
-            (sorted[(n / 2) - 1] + sorted[n / 2]) / 2.0
-        }
-    }
-
-    fun stdDev(values: List<Double>): Double? {
-        if (values.size < 2) return null
-
-        val avg = values.average()
-        val variance = values.sumOf { (it - avg) * (it - avg) } / (values.size - 1)
-
-        return sqrt(variance)
-    }
-
-    fun min(values: List<Double>): Double? {
-        return values.minOrNull()
-    }
-
-    fun max(values: List<Double>): Double? {
-        return values.maxOrNull()
-    }
-
-    fun modeString(values: List<String>): String? {
-        if (values.isEmpty()) return null
-
-        return values
-            .groupingBy { it }
-            .eachCount()
-            .maxByOrNull { it.value }
-            ?.key
     }
 }

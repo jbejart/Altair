@@ -60,11 +60,6 @@
             android:exported="false"
             android:foregroundServiceType="location|dataSync" />
 
-        <service
-            android:name="com.altair.app.LocalMeasurementService"
-            android:exported="false"
-            android:foregroundServiceType="location" />
-
     </application>
 
 </manifest>

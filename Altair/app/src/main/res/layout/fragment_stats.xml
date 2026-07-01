@@ -189,22 +189,6 @@
                         app:singleSelection="true">
 
                         <com.google.android.material.chip.Chip
-                            android:id="@+id/chip2g"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="2G"
-                            android:checkable="true" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip3g"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="3G"
-                            android:checkable="true" />
-
-                        <com.google.android.material.chip.Chip
                             android:id="@+id/chip4g"
                             style="@style/Widget.MaterialComponents.Chip.Choice"
                             android:layout_width="wrap_content"

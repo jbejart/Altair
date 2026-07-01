@@ -1,34 +1,68 @@
-# Gradle files
+# =========================
+# Gradle / Android build
+# =========================
 .gradle/
 build/
+app/build/
+*/build/
 
-# Local configuration file (sdk path, etc)
+# =========================
+# Local configuration
+# =========================
 local.properties
 
-# Log/OS Files
+# =========================
+# Logs / OS files
+# =========================
 *.log
+.DS_Store
+Thumbs.db
 
-# Android Studio generated files and folders
+# =========================
+# Android Studio / IntelliJ
+# =========================
+.idea/
+*.iml
 captures/
 .externalNativeBuild/
 .cxx/
-*.aab
-*.apk
-output-metadata.json
-
-# IntelliJ
-*.iml
-.idea/
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# =========================
+# APK / AAB / outputs
+# =========================
+*.apk
+!Altair_version_1.apk
+
+*.aab
+output-metadata.json
+
+# =========================
+# Keystore / signing files
+# =========================
 *.jks
 *.keystore
+*.p12
+*.pem
 
-# Google Services (e.g. APIs or Firebase)
+# =========================
+# Firebase / Google services
+# =========================
 google-services.json
 
-# Android Profiling
-*.hprof
+# =========================
+# Codex / agents / AI local files
+# =========================
+.agents/
+.codex/
+.codexignore
+AGENTS.md
+CODEX.md
+
+# =========================
+# Environment / secrets
+# =========================
+.env
+.env.*

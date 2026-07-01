@@ -40,25 +40,23 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 /**
- * Background foreground service that captures radio KPI samples (LTE / NR) at a fixed cadence,
- * aggregates them over a sliding window, and uploads the resulting document to Cloud Firestore.
+ * Foreground service that captures one LTE / NR radio KPI sample every 5 seconds,
+ * stores it locally in CSV, and uploads that same document to Cloud Firestore.
  */
 class ForegroundMeasurementService : Service() {
 
     companion object {
         private const val TAG = "AltairCloudService"
 
-        private const val CHANNEL_ID = "altair_cloud_measurement_channel"
+        private const val CHANNEL_ID = "altair_measurement_channel"
         private const val NOTIFICATION_ID = 1
 
         private const val CAPTURE_INTERVAL_MS = 5_000L
-        private const val SUBSAMPLES_PER_WINDOW = 20
-        private const val SUBSAMPLE_INTERVAL_MS = 250L
 
         private const val LOCATION_INTERVAL_MS = 4_000L
         private const val MIN_DISTANCE_M = 3f
 
-        private const val CELLINFO_TIMEOUT_MS = 250L
+        private const val CELLINFO_TIMEOUT_MS = 1_000L
         private const val MAX_CELLINFO_AGE_MS = 60_000L
 
         private const val FIRESTORE_COLLECTION = "measurements_agg"
@@ -84,15 +82,6 @@ class ForegroundMeasurementService : Service() {
     private var lastRadioSignature: String? = null
     private var repeatedCount = 0
 
-    private data class WindowRadioSample(
-        val timestampMs: Long,
-        val lat: Double,
-        val lon: Double,
-        val accuracyM: Float,
-        val speedMps: Float,
-        val data: Map<String, Any>
-    )
-
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service created")
@@ -108,13 +97,13 @@ class ForegroundMeasurementService : Service() {
         startLocationUpdates()
 
         isRunning = true
-        ServiceStateStore.setFirebaseRunning(this, true)
+        ServiceStateStore.setMeasurementRunning(this, true)
         startCaptureLoop()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         isRunning = true
-        ServiceStateStore.setFirebaseRunning(this, true)
+        ServiceStateStore.setMeasurementRunning(this, true)
 
         if (captureThread?.isAlive != true) {
             startCaptureLoop()
@@ -135,7 +124,7 @@ class ForegroundMeasurementService : Service() {
         locationCallback = null
 
         releaseWakeLock()
-        ServiceStateStore.setFirebaseRunning(this, false)
+        ServiceStateStore.setMeasurementRunning(this, false)
 
         super.onDestroy()
     }
@@ -145,10 +134,10 @@ class ForegroundMeasurementService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Altair cloud measurement",
+            "Altair measurement",
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Foreground service that streams radio KPIs to Firebase Firestore."
+            description = "Foreground service that saves radio KPI samples locally and sends them to Firebase Firestore."
         }
 
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -163,8 +152,8 @@ class ForegroundMeasurementService : Service() {
         )
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Altair cloud active 📡")
-            .setContentText("Streaming radio KPIs to Firestore…")
+            .setContentTitle("Altair measurement active")
+            .setContentText("Saving and uploading one radio KPI sample every 5 seconds...")
             .setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -176,7 +165,7 @@ class ForegroundMeasurementService : Service() {
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         if (!hasLocationPermission()) {
-            Log.w(TAG, "ACCESS_FINE_LOCATION not granted — location unavailable")
+            Log.w(TAG, "ACCESS_FINE_LOCATION not granted - location unavailable")
             return
         }
 
@@ -198,20 +187,19 @@ class ForegroundMeasurementService : Service() {
 
         captureThread = Thread {
             while (isRunning) {
-                val windowStartMs = System.currentTimeMillis()
+                val sampleStartMs = System.currentTimeMillis()
 
                 try {
-                    val samples = captureWindow()
-                    val windowEndMs = System.currentTimeMillis()
-                    val document = buildAggregateDocument(samples, windowStartMs, windowEndMs)
+                    val document = captureSingleSample(sampleStartMs)
 
                     if (document != null) {
+                        LocalTrackStore.appendDocument(this, document)
                         uploadToFirestore(document)
                     } else {
-                        Log.w(TAG, "Window produced no valid samples — skipping upload")
+                        Log.w(TAG, "Invalid sample - skipping storage")
                     }
 
-                    sleepRemainingWindow(windowStartMs)
+                    sleepRemainingInterval(sampleStartMs)
                 } catch (_: InterruptedException) {
                     break
                 } catch (e: Exception) {
@@ -225,48 +213,122 @@ class ForegroundMeasurementService : Service() {
         }
     }
 
-    private fun captureWindow(): List<WindowRadioSample> {
-        val samples = mutableListOf<WindowRadioSample>()
-
-        repeat(SUBSAMPLES_PER_WINDOW) { index ->
-            if (!isRunning) return@repeat
-
-            val location = currentLocation
-            val radioData = buildRadioData(getFreshCellInfo())
-
-            if (location != null && radioData != null) {
-                val hasKpi = radioData["hasAnyRadioKpi"] as? Boolean ?: false
-
-                if (hasKpi) {
-                    samples += WindowRadioSample(
-                        timestampMs = System.currentTimeMillis(),
-                        lat = location.latitude,
-                        lon = location.longitude,
-                        accuracyM = location.accuracy,
-                        speedMps = location.speed,
-                        data = radioData
-                    )
-
-                    Log.d(
-                        TAG,
-                        "Sub-sample ${index + 1}/$SUBSAMPLES_PER_WINDOW | " +
-                                "rsrp=${radioData["rsrpDbm"]} rsrq=${radioData["rsrqDb"]} " +
-                                "rssi=${radioData["rssiDbm"]} sinr=${radioData["sinrDb"]}"
-                    )
-                }
-            }
-
-            if (index < SUBSAMPLES_PER_WINDOW - 1) {
-                Thread.sleep(SUBSAMPLE_INTERVAL_MS)
-            }
+    private fun captureSingleSample(sampleStartMs: Long): MutableMap<String, Any>? {
+        val location = currentLocation
+        if (location == null) {
+            Log.w(TAG, "No GPS location available")
+            return null
         }
 
-        return samples
+        val radioData = buildRadioData(getFreshCellInfo())
+        if (radioData == null) {
+            Log.w(TAG, "No radio data available")
+            return null
+        }
+
+        val hasKpi = radioData["hasAnyRadioKpi"] as? Boolean ?: false
+        if (!hasKpi) {
+            Log.w(TAG, "No valid KPI available")
+            return null
+        }
+
+        val cellInfoTooOld = radioData["cellInfoTooOld"] as? Boolean ?: false
+        if (cellInfoTooOld) {
+            Log.w(TAG, "CellInfo too old")
+            return null
+        }
+
+        val sampleEndMs = System.currentTimeMillis()
+
+        Log.d(
+            TAG,
+            "Sample captured | rsrp=${radioData["rsrpDbm"]} " +
+                    "rsrq=${radioData["rsrqDb"]} " +
+                    "rssi=${radioData["rssiDbm"]} " +
+                    "sinr=${radioData["sinrDb"]}"
+        )
+
+        return buildSampleDocument(
+            location = location,
+            radioData = radioData,
+            sampleStartMs = sampleStartMs,
+            sampleEndMs = sampleEndMs
+        )
     }
 
-    private fun sleepRemainingWindow(startedAt: Long) {
-        val remaining = CAPTURE_INTERVAL_MS - (System.currentTimeMillis() - startedAt)
-        if (remaining > 0) Thread.sleep(remaining)
+    private fun buildSampleDocument(
+        location: Location,
+        radioData: Map<String, Any>,
+        sampleStartMs: Long,
+        sampleEndMs: Long
+    ): MutableMap<String, Any> {
+        val document = mutableMapOf<String, Any>(
+            "timestampStartMs" to sampleStartMs,
+            "timestampEndMs" to sampleEndMs,
+            "timestampMs" to sampleEndMs,
+            "source" to "foregroundService_5s_single_sample",
+            "samplingIntervalMs" to CAPTURE_INTERVAL_MS,
+
+            "rawSamplesCount" to 1,
+            "validSamplesCount" to 1,
+            "tooOldSamplesCount" to 0,
+            "repeatedSamplesCount" to if (radioData["isRepeatedRadioSample"] as? Boolean == true) 1 else 0,
+            "repeatedRatio" to if (radioData["isRepeatedRadioSample"] as? Boolean == true) 1.0 else 0.0,
+
+            "lat" to location.latitude,
+            "lon" to location.longitude,
+            "accuracyM" to location.accuracy,
+            "speedMps" to location.speed
+        )
+
+        document.putAll(radioData)
+
+        putSingleMetricStats(document, "rsrp", radioData["rsrpDbm"])
+        putSingleMetricStats(document, "rsrq", radioData["rsrqDb"])
+        putSingleMetricStats(document, "rssi", radioData["rssiDbm"])
+        putSingleMetricStats(document, "sinr", radioData["sinrDb"])
+        putSingleMetricStats(document, "cellInfoAgeMs", radioData["cellInfoAgeMs"])
+
+        document["rsrpAvailabilityPct"] = availabilityPct(radioData["rsrpDbm"])
+        document["rsrqAvailabilityPct"] = availabilityPct(radioData["rsrqDb"])
+        document["rssiAvailabilityPct"] = availabilityPct(radioData["rssiDbm"])
+        document["sinrAvailabilityPct"] = availabilityPct(radioData["sinrDb"])
+
+        document["lastRadioRepeatedCount"] = radioData["radioRepeatedCount"] ?: 0
+        radioData["radioSignature"]?.let { document["lastRadioSignature"] = it }
+
+        return document
+    }
+
+    private fun putSingleMetricStats(
+        document: MutableMap<String, Any>,
+        prefix: String,
+        value: Any?
+    ) {
+        val numericValue = (value as? Number)?.toDouble()
+
+        document["${prefix}ValidCount"] = if (numericValue != null) 1 else 0
+
+        if (numericValue == null) return
+
+        document["${prefix}Avg"] = numericValue
+        document["${prefix}Median"] = numericValue
+        document["${prefix}Min"] = numericValue
+        document["${prefix}Max"] = numericValue
+        document["${prefix}Std"] = 0.0
+    }
+
+    private fun availabilityPct(value: Any?): Double {
+        return if (value is Number) 100.0 else 0.0
+    }
+
+    private fun sleepRemainingInterval(startedAt: Long) {
+        val elapsed = System.currentTimeMillis() - startedAt
+        val remaining = CAPTURE_INTERVAL_MS - elapsed
+
+        if (remaining > 0) {
+            Thread.sleep(remaining)
+        }
     }
 
     private fun sleepCaptureIntervalQuietly() {
@@ -279,7 +341,7 @@ class ForegroundMeasurementService : Service() {
 
     private fun uploadToFirestore(document: Map<String, Any>) {
         if (!hasInternetConnection()) {
-            Log.w(TAG, "No internet — local CSV fallback handled by LocalMeasurementService")
+            Log.w(TAG, "No internet - Firestore upload deferred by local CSV retention")
             return
         }
 
@@ -288,10 +350,11 @@ class ForegroundMeasurementService : Service() {
             .addOnSuccessListener {
                 Log.d(
                     TAG,
-                    "Firestore write OK | raw=${document["rawSamplesCount"]} " +
-                            "valid=${document["validSamplesCount"]} " +
-                            "rsrpMedian=${document["rsrpMedian"]} " +
-                            "rsrqMedian=${document["rsrqMedian"]}"
+                    "Firestore write OK | " +
+                            "rsrp=${document["rsrpDbm"]} " +
+                            "rsrq=${document["rsrqDb"]} " +
+                            "rssi=${document["rssiDbm"]} " +
+                            "sinr=${document["sinrDb"]}"
                 )
             }
             .addOnFailureListener { e ->
@@ -428,7 +491,10 @@ class ForegroundMeasurementService : Service() {
                 data["networkType"] = "5G NR"
 
                 identity.pci.takeIfValid()?.let { data["pci"] = it }
-                if (identity.nci != Long.MAX_VALUE) data["nci"] = identity.nci
+
+                if (identity.nci != Long.MAX_VALUE) {
+                    data["nci"] = identity.nci
+                }
 
                 rsrp?.let {
                     data["rsrpDbm"] = it
@@ -500,6 +566,7 @@ class ForegroundMeasurementService : Service() {
                 is CellInfoNr -> {
                     val strength = cell.cellSignalStrength as CellSignalStrengthNr
                     val identity = cell.cellIdentity as CellIdentityNr
+
                     val rsrp = RadioKpiUtils.validRsrp(strength.ssRsrp)
                         ?: return@mapNotNull null
 
@@ -513,131 +580,6 @@ class ForegroundMeasurementService : Service() {
                 else -> null
             }
         }
-
-    private fun buildAggregateDocument(
-        samples: List<WindowRadioSample>,
-        windowStartMs: Long,
-        windowEndMs: Long
-    ): MutableMap<String, Any>? {
-        if (samples.isEmpty()) return null
-
-        val validSamples = samples.filter {
-            !(it.data["cellInfoTooOld"] as? Boolean ?: false)
-        }
-
-        if (validSamples.isEmpty()) return null
-
-        val lastData = validSamples.last().data
-
-        val document = mutableMapOf<String, Any>(
-            "timestampStartMs" to windowStartMs,
-            "timestampEndMs" to windowEndMs,
-            "timestampMs" to windowEndMs,
-            "source" to "foregroundService_5s_aggregate",
-
-            "rawSamplesCount" to samples.size,
-            "validSamplesCount" to validSamples.size,
-            "tooOldSamplesCount" to samples.count {
-                it.data["cellInfoTooOld"] as? Boolean ?: false
-            },
-            "repeatedSamplesCount" to samples.count {
-                it.data["isRepeatedRadioSample"] as? Boolean ?: false
-            },
-
-            "lat" to validSamples.map { it.lat }.average(),
-            "lon" to validSamples.map { it.lon }.average(),
-            "accuracyM" to (validSamples.minOfOrNull { it.accuracyM }
-                ?: validSamples.last().accuracyM),
-            "speedMps" to validSamples.map { it.speedMps.toDouble() }.average(),
-
-            "repeatedRatio" to samples.count {
-                it.data["isRepeatedRadioSample"] as? Boolean ?: false
-            }.toDouble() / samples.size
-        )
-
-        putIfPresent(
-            document,
-            "networkType",
-            RadioKpiUtils.modeString(
-                validSamples.mapNotNull { it.data["networkType"]?.toString() }
-            ) ?: lastData["networkType"]
-        )
-
-        putIfPresent(document, "operatorMccMnc", lastData["operatorMccMnc"])
-        putIfPresent(document, "networkOperatorName", lastData["networkOperatorName"])
-        putIfPresent(document, "cellId", lastData["cellId"])
-        putIfPresent(document, "tac", lastData["tac"])
-        putIfPresent(document, "pci", lastData["pci"])
-        putIfPresent(document, "earfcn", lastData["earfcn"])
-        putIfPresent(document, "band", lastData["band"])
-        putIfPresent(document, "nci", lastData["nci"])
-
-        putMetricStats(document, "rsrp", extractDoubles(validSamples, "rsrpDbm"))
-        putMetricStats(document, "rsrq", extractDoubles(validSamples, "rsrqDb"))
-        putMetricStats(document, "rssi", extractDoubles(validSamples, "rssiDbm"))
-        putMetricStats(document, "sinr", extractDoubles(validSamples, "sinrDb"))
-        putMetricStats(document, "cellInfoAgeMs", extractDoubles(validSamples, "cellInfoAgeMs"))
-
-        document["rsrpAvailabilityPct"] = availabilityPct(validSamples, "rsrpDbm")
-        document["rsrqAvailabilityPct"] = availabilityPct(validSamples, "rsrqDb")
-        document["rssiAvailabilityPct"] = availabilityPct(validSamples, "rssiDbm")
-        document["sinrAvailabilityPct"] = availabilityPct(validSamples, "sinrDb")
-
-        putIfPresent(document, "lastRadioRepeatedCount", lastData["radioRepeatedCount"])
-        putIfPresent(document, "lastRadioSignature", lastData["radioSignature"])
-
-        putIfPresent(document, "rxKbps", lastData["rxKbps"])
-        putIfPresent(document, "txKbps", lastData["txKbps"])
-        putIfPresent(document, "dlMbps", lastData["dlMbps"])
-        putIfPresent(document, "ulMbps", lastData["ulMbps"])
-        putIfPresent(document, "dlBandwidthKhz", lastData["dlBandwidthKhz"])
-        putIfPresent(document, "dlBandwidthMhz", lastData["dlBandwidthMhz"])
-        putIfPresent(document, "neighbors", lastData["neighbors"])
-
-        putIfPresent(document, "androidApiLevel", lastData["androidApiLevel"])
-        putIfPresent(document, "deviceBrand", lastData["deviceBrand"])
-        putIfPresent(document, "deviceManufacturer", lastData["deviceManufacturer"])
-        putIfPresent(document, "deviceModel", lastData["deviceModel"])
-        putIfPresent(document, "deviceHardware", lastData["deviceHardware"])
-        putIfPresent(document, "deviceProduct", lastData["deviceProduct"])
-        putIfPresent(document, "batteryPct", lastData["batteryPct"])
-        putIfPresent(document, "batteryCharging", lastData["batteryCharging"])
-        putIfPresent(document, "ramUsedPct", lastData["ramUsedPct"])
-
-        putIfPresent(document, "userUid", lastData["userUid"])
-        putIfPresent(document, "userShortId", lastData["userShortId"])
-        putIfPresent(document, "userEmail", lastData["userEmail"])
-        putIfPresent(document, "userName", lastData["userName"])
-
-        return document
-    }
-
-    private fun extractDoubles(samples: List<WindowRadioSample>, field: String): List<Double> =
-        samples.mapNotNull { (it.data[field] as? Number)?.toDouble() }
-
-    private fun putMetricStats(
-        document: MutableMap<String, Any>,
-        prefix: String,
-        values: List<Double>
-    ) {
-        document["${prefix}ValidCount"] = values.size
-        if (values.isEmpty()) return
-
-        RadioKpiUtils.mean(values)?.let { document["${prefix}Avg"] = it }
-        RadioKpiUtils.median(values)?.let { document["${prefix}Median"] = it }
-        RadioKpiUtils.min(values)?.let { document["${prefix}Min"] = it }
-        RadioKpiUtils.max(values)?.let { document["${prefix}Max"] = it }
-        RadioKpiUtils.stdDev(values)?.let { document["${prefix}Std"] = it }
-    }
-
-    private fun availabilityPct(samples: List<WindowRadioSample>, field: String): Double {
-        if (samples.isEmpty()) return 0.0
-        return samples.count { it.data[field] is Number } * 100.0 / samples.size
-    }
-
-    private fun putIfPresent(document: MutableMap<String, Any>, key: String, value: Any?) {
-        value?.let { document[key] = it }
-    }
 
     @Suppress("DEPRECATION")
     private fun addSystemData(data: MutableMap<String, Any>) {
@@ -657,6 +599,7 @@ class ForegroundMeasurementService : Service() {
 
         val now = System.currentTimeMillis()
         val deltaTime = (now - lastTrafficTime) / 1_000.0
+
         val rxBytes = TrafficStats.getTotalRxBytes()
         val txBytes = TrafficStats.getTotalTxBytes()
 

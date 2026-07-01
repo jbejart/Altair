@@ -144,8 +144,6 @@ class MapFragment : Fragment(R.layout.fragment_map) {
             val checkedId = checkedIds.firstOrNull()
 
             selectedTechnology = when (checkedId) {
-                R.id.chip2gMap -> "2G"
-                R.id.chip3gMap -> "3G"
                 R.id.chip4gMap -> "4G"
                 R.id.chip5gMap -> "5G"
                 else -> DEFAULT_TECHNOLOGY
@@ -174,9 +172,9 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
         measurementSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                startBothMeasurementsFromMapSwitch()
+                startMeasurementFromMapSwitch()
             } else {
-                stopBothMeasurementsFromMapSwitch()
+                stopMeasurementFromMapSwitch()
             }
         }
     }
@@ -195,14 +193,12 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         })
     }
 
-    // ===================== SWITCH: LOCAL + FIREBASE =====================
+    // ===================== SWITCH: LOCAL CSV + FIREBASE =====================
 
     private fun syncSwitchFromRunningState() {
         val context = requireContext()
 
-        val isAnyServiceRunning =
-            ServiceStateStore.isLocalRunning(context) ||
-                    ServiceStateStore.isFirebaseRunning(context)
+        val isAnyServiceRunning = ServiceStateStore.isMeasurementRunning(context)
 
         prefs().edit {
             putBoolean(KEY_MEASUREMENT_ACTIVE, isAnyServiceRunning)
@@ -217,14 +213,14 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
         measurementSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                startBothMeasurementsFromMapSwitch()
+                startMeasurementFromMapSwitch()
             } else {
-                stopBothMeasurementsFromMapSwitch()
+                stopMeasurementFromMapSwitch()
             }
         }
     }
 
-    private fun startBothMeasurementsFromMapSwitch() {
+    private fun startMeasurementFromMapSwitch() {
         val context = requireContext()
 
         if (!hasBasePermissions()) {
@@ -255,15 +251,9 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
         ContextCompat.startForegroundService(
             context,
-            Intent(context, LocalMeasurementService::class.java)
-        )
-        ServiceStateStore.setLocalRunning(context, true)
-
-        ContextCompat.startForegroundService(
-            context,
             Intent(context, ForegroundMeasurementService::class.java)
         )
-        ServiceStateStore.setFirebaseRunning(context, true)
+        ServiceStateStore.setMeasurementRunning(context, true)
 
         prefs().edit {
             putBoolean(KEY_MEASUREMENT_ACTIVE, true)
@@ -273,19 +263,16 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
         Toast.makeText(
             context,
-            "✅ Measurement started (Local + Firebase)",
+            "Measurement started (Local CSV + Firebase)",
             Toast.LENGTH_SHORT
         ).show()
     }
 
-    private fun stopBothMeasurementsFromMapSwitch() {
+    private fun stopMeasurementFromMapSwitch() {
         val context = requireContext()
 
-        context.stopService(Intent(context, LocalMeasurementService::class.java))
-        ServiceStateStore.setLocalRunning(context, false)
-
         context.stopService(Intent(context, ForegroundMeasurementService::class.java))
-        ServiceStateStore.setFirebaseRunning(context, false)
+        ServiceStateStore.setMeasurementRunning(context, false)
 
         prefs().edit {
             putBoolean(KEY_MEASUREMENT_ACTIVE, false)
@@ -295,7 +282,7 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
         Toast.makeText(
             context,
-            "⏹ Measurement stopped",
+            "Measurement stopped",
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -405,11 +392,9 @@ class MapFragment : Fragment(R.layout.fragment_map) {
 
     private fun getCoverageFillColor(technology: String): Int {
         return when (technology) {
-            "2G" -> Color.argb(85, 63, 81, 181)
-            "3G" -> Color.argb(85, 76, 175, 80)
             "4G" -> Color.argb(85, 255, 152, 0)
             "5G" -> Color.argb(85, 233, 30, 99)
-            else -> Color.argb(85, 63, 81, 181)
+            else -> Color.argb(85, 255, 152, 0)
         }
     }
 
@@ -455,8 +440,6 @@ class MapFragment : Fragment(R.layout.fragment_map) {
         )
 
         val technologyColumn = when (technology) {
-            "2G" -> "g2"
-            "3G" -> "g3"
             "4G" -> "g4"
             "5G" -> "g5"
             else -> "g4"
