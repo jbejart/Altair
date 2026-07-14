@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottomNavMain"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="82dp"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:background="@drawable/bg_bottom_nav_altair"
+    android:elevation="24dp"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="12dp">
+
+    <!-- STATS -->
+    <LinearLayout
+        android:id="@+id/navStats"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:layout_weight="1"
+        android:layout_marginEnd="6dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@drawable/bg_nav_unselected"
+        android:padding="6dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iconStats"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/ic_chart"
+            app:tint="@color/altair_text_secondary"
+            android:contentDescription="@string/nav_stats" />
+
+        <TextView
+            android:id="@+id/txtStats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_stats"
+            android:textColor="@color/altair_text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <!-- HOME -->
+    <LinearLayout
+        android:id="@+id/navHome"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:layout_weight="1"
+        android:layout_marginStart="6dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@drawable/bg_nav_selected"
+        android:padding="6dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/iconHome"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:src="@drawable/ic_map_white"
+            app:tint="@color/altair_primary"
+            android:contentDescription="@string/nav_home" />
+
+        <TextView
+            android:id="@+id/txtHome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_home"
+            android:textColor="@color/altair_text"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

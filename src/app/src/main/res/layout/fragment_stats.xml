@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootStats"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_gradient">
+
+    <ScrollView
+        android:id="@+id/scrollStats"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="18dp"
+            android:paddingTop="22dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="28dp">
+
+            <!-- Header -->
+            <TextView
+                android:id="@+id/txtStatsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Statistics"
+                android:textColor="@color/altair_text"
+                android:textStyle="bold"
+                android:textSize="25sp"
+                android:letterSpacing="0.01"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/txtStatsSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Local summary of KPIs, network quality, and temporal evolution"
+                android:textColor="@color/altair_text_secondary"
+                android:textSize="13sp"
+                android:lineSpacingExtra="3dp"
+                android:layout_marginBottom="18dp" />
+
+            <!-- Delete action -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/altair_surface"
+                app:strokeColor="@color/altair_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Data management"
+                        android:textColor="@color/altair_text"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Manage the records stored locally on the device."
+                        android:textColor="@color/altair_text_secondary"
+                        android:textSize="12sp"
+                        android:lineSpacingExtra="3dp"
+                        android:layout_marginBottom="14dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnClearLocalStats"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="Delete local data"
+                        android:textAllCaps="false"
+                        android:textStyle="bold"
+                        android:textColor="@color/altair_text"
+                        app:backgroundTint="@color/altair_surface_2"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/altair_stroke"
+                        app:strokeWidth="1dp"
+                        app:elevation="0dp"
+                        app:rippleColor="@color/altair_primary" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- KPIs -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardKpis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/altair_surface"
+                app:strokeColor="@color/altair_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="KPI summary"
+                        android:textColor="@color/altair_text"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="10dp" />
+
+                    <TextView
+                        android:id="@+id/txtKpis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/altair_text"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp"
+                        android:text="Loading KPIs..." />
+
+                    <TextView
+                        android:id="@+id/txtNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/altair_text_secondary"
+                        android:textSize="12sp"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="3dp"
+                        android:text="RSRP is used when available; otherwise, RSSI is used." />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Pie Chart -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTechQuality"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/altair_surface"
+                app:strokeColor="@color/altair_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Technology vs quality"
+                        android:textColor="@color/altair_text"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipTechGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip4g"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="4G"
+                            android:checkable="true" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chip5g"
+                            style="@style/Widget.MaterialComponents.Chip.Choice"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="5G"
+                            android:checkable="true" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieTechQuality"
+                        android:layout_width="match_parent"
+                        android:layout_height="260dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Line Chart -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSignalTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/altair_surface"
+                app:strokeColor="@color/altair_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Signal over time"
+                        android:textColor="@color/altair_text"
+                        android:textStyle="bold"
+                        android:textSize="15sp"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/lineSignal"
+                        android:layout_width="match_parent"
+                        android:layout_height="280dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Empty state -->
+            <TextView
+                android:id="@+id/txtEmptyStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No local data yet. Enable measurement on the map."
+                android:textColor="@color/altair_text_secondary"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:padding="14dp"
+                android:layout_marginBottom="10dp" />
+
+            <!-- Bottom actions -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBottomStatsActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/altair_surface"
+                app:strokeColor="@color/altair_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnOpenHistory"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:text="History"
+                        android:textAllCaps="false"
+                        android:textStyle="bold"
+                        android:textColor="@color/altair_text"
+                        app:backgroundTint="@color/altair_primary"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/altair_primary"
+                        app:strokeWidth="1dp"
+                        app:elevation="0dp"
+                        app:rippleColor="@color/altair_surface_2" />
+
+                    <Space
+                        android:layout_width="12dp"
+                        android:layout_height="1dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnExportCsv"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:text="Export CSV"
+                        android:textAllCaps="false"
+                        android:textStyle="bold"
+                        android:textColor="@color/altair_text"
+                        app:backgroundTint="@color/altair_surface_2"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="@color/altair_stroke"
+                        app:strokeWidth="1dp"
+                        app:elevation="0dp"
+                        app:rippleColor="@color/altair_primary" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,68 +1,35 @@
-# =========================
-# Gradle / Android build
-# =========================
+# Gradle
 .gradle/
+**/.gradle/
 build/
-app/build/
-*/build/
+**/build/
 
-# =========================
 # Local configuration
-# =========================
 local.properties
+**/local.properties
 
-# =========================
-# Logs / OS files
-# =========================
-*.log
-.DS_Store
-Thumbs.db
-
-# =========================
-# Android Studio / IntelliJ
-# =========================
+# Android Studio and IntelliJ
 .idea/
+**/.idea/
 *.iml
+
+# Android build artifacts
+*.apk
+*.aab
 captures/
 .externalNativeBuild/
 .cxx/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
-
-# =========================
-# APK / AAB / outputs
-# =========================
-*.apk
-!Altair_version_1.apk
-
-*.aab
 output-metadata.json
 
-# =========================
-# Keystore / signing files
-# =========================
+# Firebase local configuration
+google-services.json
+**/google-services.json
+
+# Signing files
 *.jks
 *.keystore
-*.p12
-*.pem
 
-# =========================
-# Firebase / Google services
-# =========================
-google-services.json
-
-# =========================
-# Codex / agents / AI local files
-# =========================
-.agents/
-.codex/
-.codexignore
-AGENTS.md
-CODEX.md
-
-# =========================
-# Environment / secrets
-# =========================
-.env
-.env.*
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
