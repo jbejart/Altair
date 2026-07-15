@@ -49,9 +49,6 @@
         </activity>
 
         <activity android:name="com.altair.app.OnboardingActivity" android:exported="false" />
-        <activity android:name="com.altair.app.LoginActivity" android:exported="false" />
-
-        <!-- ✅ ESTA ES TU APP PRINCIPAL LOGUEADA -->
         <activity android:name="com.altair.app.HomeActivity" android:exported="false" />
 
         <!-- Servicios -->

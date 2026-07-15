@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.altair.app"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.altair.app"
@@ -51,10 +51,8 @@ dependencies {
     // --- Firebase ---
     implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
     implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-auth-ktx")
 
     // --- Google Play Services ---
-    implementation("com.google.android.gms:play-services-auth:21.1.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
     // --- JSON y utilidades ---

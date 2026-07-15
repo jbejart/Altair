@@ -34,7 +34,6 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -65,7 +64,6 @@ class ForegroundMeasurementService : Service() {
     private lateinit var telephonyManager: TelephonyManager
     private lateinit var firestore: FirebaseFirestore
     private lateinit var fusedClient: FusedLocationProviderClient
-    private lateinit var auth: FirebaseAuth
 
     @Volatile
     private var isRunning = false
@@ -89,7 +87,6 @@ class ForegroundMeasurementService : Service() {
         telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
         firestore = FirebaseFirestore.getInstance()
         fusedClient = LocationServices.getFusedLocationProviderClient(this)
-        auth = FirebaseAuth.getInstance()
 
         createNotificationChannel()
         startAsForeground()
@@ -619,8 +616,6 @@ class ForegroundMeasurementService : Service() {
         lastTxBytes = txBytes
         lastTrafficTime = now
 
-        val user = auth.currentUser
-
         data += mapOf(
             "operatorMccMnc" to telephonyManager.simOperator,
             "networkOperatorName" to telephonyManager.networkOperatorName,
@@ -639,12 +634,7 @@ class ForegroundMeasurementService : Service() {
             "rxKbps" to rxKbps,
             "txKbps" to txKbps,
             "dlMbps" to rxKbps / 1_024.0,
-            "ulMbps" to txKbps / 1_024.0,
-
-            "userUid" to (user?.uid ?: "anon"),
-            "userShortId" to (user?.uid?.takeLast(6) ?: "anon"),
-            "userEmail" to (user?.email ?: "anon"),
-            "userName" to (user?.displayName ?: "anon")
+            "ulMbps" to txKbps / 1_024.0
         )
     }
 

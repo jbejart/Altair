@@ -6,6 +6,9 @@ import org.json.JSONObject
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 data class LocalPoint(
     val timestampMs: Long,
@@ -35,6 +38,12 @@ data class LocalPoint(
 object LocalTrackStore {
 
     private const val FILE_NAME = "track_local.csv"
+    private val LEGACY_DIRECT_IDENTIFIER_COLUMNS = listOf(
+        "user" + "Uid",
+        "user" + "ShortId",
+        "user" + "Email",
+        "user" + "Name"
+    )
 
     private val HEADER = listOf(
         "timestampStartMs",
@@ -126,17 +135,14 @@ object LocalTrackStore {
 
         "batteryPct",
         "batteryCharging",
-        "ramUsedPct",
-
-        "userUid",
-        "userShortId",
-        "userEmail",
-        "userName"
+        "ramUsedPct"
     )
 
     fun appendDocument(context: Context, document: Map<String, Any>) {
         val file = File(context.filesDir, FILE_NAME)
-        val isNewFile = !file.exists()
+        migrateLegacyCsvIfNeeded(file)
+
+        val isNewFile = !file.exists() || file.length() == 0L
 
         BufferedWriter(FileWriter(file, true)).use { writer ->
             if (isNewFile) {
@@ -157,16 +163,22 @@ object LocalTrackStore {
         val file = File(context.filesDir, FILE_NAME)
         if (!file.exists()) return emptyList()
 
+        migrateLegacyCsvIfNeeded(file)
+
         val result = mutableListOf<LocalPoint>()
 
         file.useLines { lines ->
-            lines.drop(1).forEach { line ->
+            val iterator = lines.iterator()
+            if (!iterator.hasNext()) return@useLines
+
+            val header = parseCsvLine(iterator.next())
+
+            iterator.forEach { line ->
                 try {
                     val parts = parseCsvLine(line)
-                    if (parts.size < HEADER.size) return@forEach
 
                     fun valueOf(key: String): String? {
-                        val index = HEADER.indexOf(key)
+                        val index = header.indexOf(key)
                         if (index < 0) return null
                         return parts.getOrNull(index)?.takeIf { it.isNotBlank() }
                     }
@@ -235,6 +247,67 @@ object LocalTrackStore {
 
     fun getFile(context: Context): File {
         return File(context.filesDir, FILE_NAME)
+    }
+
+    private fun migrateLegacyCsvIfNeeded(file: File) {
+        if (!file.exists() || file.length() == 0L) return
+
+        val lines = file.readLines()
+        if (lines.isEmpty()) return
+
+        val existingHeader = parseCsvLine(lines.first())
+        val columnsToRemove = existingHeader
+            .mapIndexedNotNull { index, name ->
+                index.takeIf { name in LEGACY_DIRECT_IDENTIFIER_COLUMNS }
+            }
+            .toSet()
+
+        if (columnsToRemove.isEmpty()) return
+
+        val tempFile = File(file.parentFile, "${file.name}.tmp")
+
+        try {
+            BufferedWriter(FileWriter(tempFile, false)).use { writer ->
+                val migratedHeader = existingHeader.filterIndexed { index, _ ->
+                    index !in columnsToRemove
+                }
+
+                writer.write(migratedHeader.joinToString(",") { escapeCsv(it) })
+                writer.newLine()
+
+                lines.drop(1).forEach { line ->
+                    val parts = parseCsvLine(line)
+                    val migratedParts = existingHeader.indices
+                        .filterNot { it in columnsToRemove }
+                        .map { index -> parts.getOrNull(index).orEmpty() }
+
+                    writer.write(migratedParts.joinToString(",") { escapeCsv(it) })
+                    writer.newLine()
+                }
+            }
+
+            moveTempFileOverOriginal(tempFile, file)
+        } catch (e: Exception) {
+            if (tempFile.exists()) tempFile.delete()
+            throw e
+        }
+    }
+
+    private fun moveTempFileOverOriginal(tempFile: File, file: File) {
+        try {
+            Files.move(
+                tempFile.toPath(),
+                file.toPath(),
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.ATOMIC_MOVE
+            )
+        } catch (_: AtomicMoveNotSupportedException) {
+            Files.move(
+                tempFile.toPath(),
+                file.toPath(),
+                StandardCopyOption.REPLACE_EXISTING
+            )
+        }
     }
 
     private fun valueToCsv(value: Any?): String {

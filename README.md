@@ -89,14 +89,17 @@ a local `src/local.properties` file.
 
 The repository does not include `google-services.json`.
 
-Users who want to enable Firebase Authentication and Firestore functionality
-must provide their own Firebase project configuration file at:
+Users who want to enable optional Firebase Firestore uploads must provide
+their own Firebase project configuration file at:
 
 ```text
 src/app/google-services.json
 ```
 
 This file is intentionally excluded from version control.
+
+Altair does not require user registration or authentication and does not store
+names, email addresses, phone numbers, or other direct user identifiers.
 
 ## Basic usage
 

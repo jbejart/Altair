@@ -79,15 +79,15 @@ class OnboardingActivity : AppCompatActivity() {
                 viewPager.currentItem = position + 1
             } else {
                 if (termsAccepted) {
-                    finishOnboardingAndGoToLogin()
+                    finishOnboardingAndOpenHome()
                 }
             }
         }
     }
 
-    private fun finishOnboardingAndGoToLogin() {
+    private fun finishOnboardingAndOpenHome() {
         Prefs.setOnboardingDone(this)
-        startActivity(Intent(this, LoginActivity::class.java))
+        startActivity(Intent(this, HomeActivity::class.java))
         finish()
     }
 

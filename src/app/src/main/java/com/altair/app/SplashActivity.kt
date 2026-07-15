@@ -15,10 +15,8 @@ class SplashActivity : AppCompatActivity() {
         // Small visual delay so the logo can be displayed
         Handler(Looper.getMainLooper()).postDelayed({
             if (Prefs.hasSeenOnboarding(this)) {
-                // User has already seen the onboarding, go directly to login
-                startActivity(Intent(this, LoginActivity::class.java))
+                startActivity(Intent(this, HomeActivity::class.java))
             } else {
-                // First launch, go to onboarding
                 startActivity(Intent(this, OnboardingActivity::class.java))
             }
 
