@@ -141,11 +141,7 @@ If you use Altair in academic work, please cite the software and the associated 
 
 Software DOI:
 
-```text
-DOI: To be assigned
-```
-
-The DOI for the archived `v1.0.0` release will be added after deposition in Zenodo.
+https://doi.org/10.5281/zenodo.22151926
 
 ## License
 
