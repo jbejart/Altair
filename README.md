@@ -1,17 +1,10 @@
 # Altair: A mobile application for cellular network coverage assessment through mobile crowdsensing
 
-Altair is an open-source Android application for cellular network coverage
-assessment through mobile crowdsensing.
+Altair is an open-source Android application for cellular network coverage assessment through mobile crowdsensing.
 
-The application collects radio key performance indicators (KPIs), including
-Reference Signal Received Power (RSRP), Reference Signal Received Quality
-(RSRQ), and Received Signal Strength Indicator (RSSI), together with geographic
-location, timestamp, network technology, operator information, cell information,
-and technical device metadata.
+The application collects radio key performance indicators (KPIs), including Reference Signal Received Power (RSRP), Reference Signal Received Quality (RSRQ), and Received Signal Strength Indicator (RSSI), together with geographic location, timestamp, network technology, operator information, cell information, and technical device metadata.
 
-The complete Android Studio project is located in the `src/` directory. The
-processed smartphone measurements used in the controlled LTE validation
-campaign are available in the `data/` directory.
+The complete Android Studio project is located in the `src/` directory. The processed smartphone measurements used in the controlled LTE validation campaign are available in the `data/` directory.
 
 ## Main features
 
@@ -52,23 +45,20 @@ Altair/
 - Google Play Services
 - Android smartphone with cellular and location capabilities
 
-The availability of individual radio parameters depends on the Android
-version, chipset, modem, manufacturer, and device implementation.
+The availability of individual radio parameters depends on the Android version, chipset, modem, manufacturer, and device implementation.
 
 ## Opening the Android project
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/jorgebej/Altair.git
+git clone https://github.com/jbejart/Altair.git
 cd Altair/src
 ```
 
-Open the `src/` directory in Android Studio and allow Gradle to synchronize
-the project dependencies.
+Open the `src/` directory in Android Studio and allow Gradle to synchronize the project dependencies.
 
-Connect a compatible Android smartphone and run the application from Android
-Studio.
+Connect a compatible Android smartphone and run the application from Android Studio.
 
 On Windows, the Gradle project can be checked from the `src/` directory with:
 
@@ -82,15 +72,13 @@ A debug build can be generated with:
 .\gradlew.bat assembleDebug
 ```
 
-A local Android SDK configuration must be available through `ANDROID_HOME` or
-a local `src/local.properties` file.
+A local Android SDK configuration must be available through `ANDROID_HOME` or a local `src/local.properties` file.
 
 ## Firebase configuration
 
 The repository does not include `google-services.json`.
 
-Users who want to enable optional Firebase Firestore uploads must provide
-their own Firebase project configuration file at:
+Users who want to enable optional Firebase Firestore uploads must provide their own Firebase project configuration file at:
 
 ```text
 src/app/google-services.json
@@ -98,8 +86,7 @@ src/app/google-services.json
 
 This file is intentionally excluded from version control.
 
-Altair does not require user registration or authentication and does not store
-names, email addresses, phone numbers, or other direct user identifiers.
+Altair does not require user registration or authentication and does not store names, email addresses, phone numbers, or other direct user identifiers.
 
 ## Basic usage
 
@@ -119,8 +106,7 @@ The processed smartphone measurements are available at:
 data/altair_processed_measurements.csv
 ```
 
-The dataset contains measurements grouped by smartphone and acquisition
-interval, including:
+The dataset contains measurements grouped by smartphone and acquisition interval, including:
 
 - Mean and standard deviation of RSRP.
 - Mean and standard deviation of RSRQ.
@@ -129,25 +115,17 @@ interval, including:
 - Anonymized device labels.
 - Measurement time intervals.
 
-The dataset contains processed and aggregated smartphone measurements. It is
-not the original raw CSV exported directly by the Android application.
+The dataset contains processed and aggregated smartphone measurements. It is not the original raw CSV exported directly by the Android application.
 
-Additional information is available in
-[`data/README.md`](data/README.md).
+Additional information is available in [`data/README.md`](data/README.md).
 
-The repository does not include raw or processed measurements from the
-Anite NEMO Invex reference system. No Python data-processing scripts are
-published in this repository.
+The repository does not include raw or processed measurements from the Anite NEMO Invex reference system. No Python data-processing scripts are published in this repository.
 
 ## Scientific use
 
-Altair is intended for academic, experimental, and exploratory studies of
-cellular network coverage using commercial Android smartphones.
+Altair is intended for academic, experimental, and exploratory studies of cellular network coverage using commercial Android smartphones.
 
-Altair is not intended to replace calibrated professional drive-test
-equipment. Measurements may vary between smartphones because of differences
-in antennas, chipsets, modems, firmware, Android versions, and manufacturer
-reporting mechanisms.
+Altair is not intended to replace calibrated professional drive-test equipment. Measurements may vary between smartphones because of differences in antennas, chipsets, modems, firmware, Android versions, and manufacturer reporting mechanisms.
 
 ## Version
 
@@ -157,10 +135,21 @@ The software version associated with the article is:
 v1.0.0
 ```
 
+## Citation
+
+If you use Altair in academic work, please cite the software and the associated SoftwareX publication.
+
+Software DOI:
+
+```text
+DOI: To be assigned
+```
+
+The DOI for the archived `v1.0.0` release will be added after deposition in Zenodo.
+
 ## License
 
-Altair is distributed under the
-[MIT License](LICENSE.txt).
+Altair is distributed under the [MIT License](LICENSE.txt).
 
 Copyright © 2026:
 
@@ -168,17 +157,37 @@ Copyright © 2026:
 - Alexandra Judith Benavente Vera
 - Alberth Ronal Tamo Calla
 
-## Authors
+## Software authors and contributors
 
 - Jairo Jorge Bejar Torreblanca
 - Alexandra Judith Benavente Vera
 - Alberth Ronal Tamo Calla
 
+## Associated publication
+
+The software is associated with the SoftwareX manuscript:
+
+**Altair: A mobile crowdsensing application for cellular network coverage assessment**
+
+Authors:
+
+- Jairo Jorge Bejar Torreblanca
+- Alexandra Judith Benavente Vera
+- Alberth Ronal Tamo Calla
+- Alexander Beremiz Hilario Tacuri
+
 ## Contact
 
-For questions related to the project:
+For questions related to the software or associated publication:
 
-```text
-abenaventev@unsa.edu.pe
-atamo@unsa.edu.pe
-```
+**Corresponding author**
+
+Jairo Jorge Bejar Torreblanca  
+Universidad Nacional de San Agustín de Arequipa  
+Email: jbejart@unsa.edu.pe
+
+Additional authors:
+
+- Alexandra Judith Benavente Vera — abenaventev@unsa.edu.pe
+- Alberth Ronal Tamo Calla — atamo@unsa.edu.pe
+- Alexander Beremiz Hilario Tacuri — ahilariot@unsa.edu.pe
