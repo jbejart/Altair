@@ -6,6 +6,7 @@ This directory contains the processed smartphone measurements obtained during th
 
 - `Altair_measurements_aligned.csv`: Processed crowdsensing measurements grouped by smartphone and measurement interval.
 - `nemo_measurements_aligned.csv`: Processed reference measurements collected by the Anite NEMO Invex system, aligned to the same time intervals for direct comparison.
+- `filtering.ipynb`: Jupyter Notebook containing the data filtering and processing steps for the Altair and NEMO measurements.
 
 ## Dataset structure
 
