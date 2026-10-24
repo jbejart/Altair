@@ -1,11 +1,11 @@
 # Validation campaign measurements
 
-This directory contains the processed smartphone measurements obtained during the controlled LTE validation campaign conducted with Altair, as well as the reference measurements collected with the Keysight Anite NEMO Invex system.
+This directory contains the processed smartphone measurements obtained during the controlled LTE validation campaign conducted with Altair, as well as the processed reference measurements collected with the Keysight Anite NEMO Invex system.
 
 ## Files
 
 - `Altair_measurements_aligned.csv`: Processed crowdsensing measurements grouped by smartphone and measurement interval.
-- `nemo_measurements_aligned.csv`: Reference measurements collected by the Anite NEMO Invex system, aligned to the same time intervals for direct comparison.
+- `nemo_measurements_aligned.csv`: Processed reference measurements collected by the Anite NEMO Invex system, aligned to the same time intervals for direct comparison.
 
 ## Dataset structure
 
