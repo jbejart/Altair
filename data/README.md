@@ -28,11 +28,11 @@ Both datasets contain the following columns:
 
 ## Data processing
 
-The values in these files were obtained by grouping the periodic samples collected by Altair and the NEMO system according to the device and measurement interval. 
+The datasets contain processed measurements grouped by device (smartphone or reference system) and acquisition interval. 
 
-For each group, the mean and standard deviation of RSRQ, RSRP, and RSSI were calculated. The mean geographic coordinates were also calculated to represent the approximate measurement location associated with each interval. 
+For each group, the data includes the calculated mean and standard deviation for the RSRQ, RSRP, and RSSI metrics, alongside the mean geographic coordinates representing the approximate measurement location. 
 
-These files contain processed, aligned, and aggregated results to enable benchmarking. They are not the original raw CSV files exported directly by the Android application or the NEMO system.
+Both files provide aggregated results strictly aligned for benchmarking purposes. They are not the original raw CSV files exported directly by the Android application or the NEMO system.
 
 ## Device anonymization
 
