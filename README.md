@@ -34,7 +34,9 @@ Altair/
 │   └── gradlew.bat
 └── data/
     ├── README.md
-    └── altair_processed_measurements.csv
+    └── nemo_measurements_aligned.csv
+    ├── Altair_measurements_aligned.csv
+    └── FILTERING.ipynb
 ```
 
 ## Requirements
