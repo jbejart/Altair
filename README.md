@@ -102,26 +102,22 @@ Altair does not require user registration or authentication and does not store n
 
 ## Validation data
 
-The processed smartphone measurements are available at:
+The processed measurements and analysis scripts used for the validation campaign are available in the `data/` directory:
 
-```text
-data/altair_processed_measurements.csv
-```
+- `Altair_measurements_aligned.csv`: Processed smartphone crowdsensing measurements.
+- `nemo_measurements_aligned.csv`: Processed reference measurements from the Anite NEMO Invex system.
+- `FILTERING.ipynb`: Jupyter Notebook containing the data filtering steps, the statistical evaluation (Bias, MAE, RMSE, r), and the generation of comparative KPI plots (RSRP, RSRQ, RSSI) between the Altair-enabled smartphones and the NEMO reference system.
 
-The dataset contains measurements grouped by smartphone and acquisition interval, including:
+The CSV datasets contain measurements grouped by device and acquisition interval, including:
 
-- Mean and standard deviation of RSRP.
-- Mean and standard deviation of RSRQ.
-- Mean and standard deviation of RSSI.
+- Mean and standard deviation of RSRP, RSRQ, and RSSI.
 - Mean latitude and longitude.
 - Anonymized device labels.
 - Measurement time intervals.
 
-The dataset contains processed and aggregated smartphone measurements. It is not the original raw CSV exported directly by the Android application.
+Both datasets contain processed, aggregated, and aligned results to enable benchmarking. They are not the original raw CSV files exported directly by the Android application or the NEMO system.
 
 Additional information is available in [`data/README.md`](data/README.md).
-
-The repository does not include raw or processed measurements from the Anite NEMO Invex reference system. No Python data-processing scripts are published in this repository.
 
 ## Scientific use
 
