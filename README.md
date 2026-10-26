@@ -4,7 +4,7 @@ Altair is an open-source Android application for cellular network coverage asses
 
 The application collects radio key performance indicators (KPIs), including Reference Signal Received Power (RSRP), Reference Signal Received Quality (RSRQ), and Received Signal Strength Indicator (RSSI), together with geographic location, timestamp, network technology, operator information, cell information, and technical device metadata.
 
-The complete Android Studio project is located in the `src/` directory. The processed smartphone measurements used in the controlled LTE validation campaign are available in the `data/` directory.
+The complete Android Studio project is located in the `src/` directory. The processed smartphone and NEMO reference measurements, together with the analysis notebook used for the controlled LTE validation campaign, are available in the `data/` directory.
 
 ## Main features
 
@@ -34,7 +34,7 @@ Altair/
 │   └── gradlew.bat
 └── data/
     ├── README.md
-    └── nemo_measurements_aligned.csv
+    ├── nemo_measurements_aligned.csv
     ├── Altair_measurements_aligned.csv
     └── FILTERING.ipynb
 ```
@@ -90,6 +90,12 @@ This file is intentionally excluded from version control.
 
 Altair does not require user registration or authentication and does not store names, email addresses, phone numbers, or other direct user identifiers.
 
+## Measurement record format
+
+Version v1.1.0 uses a shared schema of 90 top-level fields for new LTE and 5G NR measurement records. The local CSV contains the same field names and values as the document prepared for Firestore. Unavailable or technology-specific values are empty in CSV and `null` in Firestore. The `neighbors` field is stored as JSON in CSV and as an array of maps in Firestore.
+
+Existing local CSV files are migrated to the shared header, retaining their recorded values and leaving newly introduced fields empty. Previously stored Firestore documents are not modified. The processed validation datasets in `data/` have their own aggregated format and are not expected to contain these 90 columns.
+
 ## Basic usage
 
 1. Install and open Altair on a compatible Android smartphone.
@@ -127,17 +133,19 @@ Altair is not intended to replace calibrated professional drive-test equipment. 
 
 ## Version
 
-The software version associated with the article is:
+The current local software version is:
 
 ```text
-v1.0.0
+v1.1.0
 ```
+
+Publication of the v1.1.0 GitHub release and Zenodo archive is pending. The previously documented version is v1.0.0.
 
 ## Citation
 
 If you use Altair in academic work, please cite the software and the associated SoftwareX publication.
 
-Software DOI:
+Existing software DOI (the v1.1.0 archive is pending):
 
 https://doi.org/10.5281/zenodo.22151926
 

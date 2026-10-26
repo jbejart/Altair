@@ -45,100 +45,10 @@ object LocalTrackStore {
         "user" + "Name"
     )
 
-    private val HEADER = listOf(
-        "timestampStartMs",
-        "timestampEndMs",
-        "timestampMs",
-        "source",
+    private val HEADER = MeasurementSchema.fields
 
-        "rawSamplesCount",
-        "validSamplesCount",
-        "tooOldSamplesCount",
-        "repeatedSamplesCount",
-
-        "lat",
-        "lon",
-        "accuracyM",
-        "speedMps",
-        "repeatedRatio",
-
-        "networkType",
-        "operatorMccMnc",
-        "networkOperatorName",
-
-        "cellId",
-        "tac",
-        "pci",
-        "earfcn",
-        "band",
-        "nci",
-
-        "rsrpValidCount",
-        "rsrpAvg",
-        "rsrpMedian",
-        "rsrpMin",
-        "rsrpMax",
-        "rsrpStd",
-
-        "rsrqValidCount",
-        "rsrqAvg",
-        "rsrqMedian",
-        "rsrqMin",
-        "rsrqMax",
-        "rsrqStd",
-
-        "rssiValidCount",
-        "rssiAvg",
-        "rssiMedian",
-        "rssiMin",
-        "rssiMax",
-        "rssiStd",
-
-        "sinrValidCount",
-        "sinrAvg",
-        "sinrMedian",
-        "sinrMin",
-        "sinrMax",
-        "sinrStd",
-
-        "cellInfoAgeMsValidCount",
-        "cellInfoAgeMsAvg",
-        "cellInfoAgeMsMedian",
-        "cellInfoAgeMsMin",
-        "cellInfoAgeMsMax",
-        "cellInfoAgeMsStd",
-
-        "rsrpAvailabilityPct",
-        "rsrqAvailabilityPct",
-        "rssiAvailabilityPct",
-        "sinrAvailabilityPct",
-
-        "lastRadioRepeatedCount",
-        "lastRadioSignature",
-
-        "rxKbps",
-        "txKbps",
-        "dlMbps",
-        "ulMbps",
-
-        "dlBandwidthKhz",
-        "dlBandwidthMhz",
-
-        "neighbors",
-
-        "androidApiLevel",
-        "deviceBrand",
-        "deviceManufacturer",
-        "deviceModel",
-        "deviceHardware",
-        "deviceProduct",
-
-        "batteryPct",
-        "batteryCharging",
-        "ramUsedPct"
-    )
-
-    fun appendDocument(context: Context, document: Map<String, Any>) {
+    fun appendDocument(context: Context, document: Map<String, Any?>) {
+        val normalized = MeasurementSchema.normalize(document)
         val file = File(context.filesDir, FILE_NAME)
         migrateLegacyCsvIfNeeded(file)
 
@@ -151,7 +61,7 @@ object LocalTrackStore {
             }
 
             val row = HEADER.joinToString(",") { key ->
-                valueToCsv(document[key])
+                valueToCsv(normalized[key])
             }
 
             writer.write(row)
@@ -246,7 +156,9 @@ object LocalTrackStore {
     }
 
     fun getFile(context: Context): File {
-        return File(context.filesDir, FILE_NAME)
+        val file = File(context.filesDir, FILE_NAME)
+        migrateLegacyCsvIfNeeded(file)
+        return file
     }
 
     private fun migrateLegacyCsvIfNeeded(file: File) {
@@ -256,30 +168,28 @@ object LocalTrackStore {
         if (lines.isEmpty()) return
 
         val existingHeader = parseCsvLine(lines.first())
-        val columnsToRemove = existingHeader
-            .mapIndexedNotNull { index, name ->
-                index.takeIf { name in LEGACY_DIRECT_IDENTIFIER_COLUMNS }
-            }
-            .toSet()
+        if (existingHeader == HEADER) return
 
-        if (columnsToRemove.isEmpty()) return
+        // Only obsolete identifiers may be dropped; never silently discard unknown data.
+        require(existingHeader.all { it in HEADER || it in LEGACY_DIRECT_IDENTIFIER_COLUMNS }) {
+            "CSV contains unknown columns; original file left unchanged"
+        }
 
         val tempFile = File(file.parentFile, "${file.name}.tmp")
 
         try {
             BufferedWriter(FileWriter(tempFile, false)).use { writer ->
-                val migratedHeader = existingHeader.filterIndexed { index, _ ->
-                    index !in columnsToRemove
-                }
+                val migratedHeader = HEADER
+                val originalIndices = existingHeader.withIndex().associate { it.value to it.index }
 
                 writer.write(migratedHeader.joinToString(",") { escapeCsv(it) })
                 writer.newLine()
 
                 lines.drop(1).forEach { line ->
                     val parts = parseCsvLine(line)
-                    val migratedParts = existingHeader.indices
-                        .filterNot { it in columnsToRemove }
-                        .map { index -> parts.getOrNull(index).orEmpty() }
+                    val migratedParts = migratedHeader.map { name ->
+                        originalIndices[name]?.let { parts.getOrNull(it) }.orEmpty()
+                    }
 
                     writer.write(migratedParts.joinToString(",") { escapeCsv(it) })
                     writer.newLine()

@@ -210,7 +210,7 @@ class ForegroundMeasurementService : Service() {
         }
     }
 
-    private fun captureSingleSample(sampleStartMs: Long): MutableMap<String, Any>? {
+    private fun captureSingleSample(sampleStartMs: Long): Map<String, Any?>? {
         val location = currentLocation
         if (location == null) {
             Log.w(TAG, "No GPS location available")
@@ -245,12 +245,12 @@ class ForegroundMeasurementService : Service() {
                     "sinr=${radioData["sinrDb"]}"
         )
 
-        return buildSampleDocument(
+        return MeasurementSchema.normalize(buildSampleDocument(
             location = location,
             radioData = radioData,
             sampleStartMs = sampleStartMs,
             sampleEndMs = sampleEndMs
-        )
+        ))
     }
 
     private fun buildSampleDocument(
@@ -336,7 +336,7 @@ class ForegroundMeasurementService : Service() {
         }
     }
 
-    private fun uploadToFirestore(document: Map<String, Any>) {
+    private fun uploadToFirestore(document: Map<String, Any?>) {
         if (!hasInternetConnection()) {
             Log.w(TAG, "No internet - Firestore upload deferred by local CSV retention")
             return
@@ -488,6 +488,8 @@ class ForegroundMeasurementService : Service() {
                 data["networkType"] = "5G NR"
 
                 identity.pci.takeIfValid()?.let { data["pci"] = it }
+                identity.tac.takeIfValid()?.let { data["tac"] = it }
+                identity.nrarfcn.takeIfValid()?.let { data["nrarfcn"] = it }
 
                 if (identity.nci != Long.MAX_VALUE) {
                     data["nci"] = identity.nci
@@ -518,6 +520,7 @@ class ForegroundMeasurementService : Service() {
             networkType = data["networkType"]?.toString(),
             pci = data["pci"],
             earfcn = data["earfcn"],
+            nrarfcn = data["nrarfcn"],
             nci = data["nci"],
             cellId = data["cellId"],
             rsrp = data["rsrpDbm"],
@@ -571,6 +574,11 @@ class ForegroundMeasurementService : Service() {
                         put("type", "NR")
                         put("rsrpDbm", rsrp)
                         identity.pci.takeIfValid()?.let { put("pci", it) }
+                        identity.tac.takeIfValid()?.let { put("tac", it) }
+                        identity.nrarfcn.takeIfValid()?.let { put("nrarfcn", it) }
+                        if (identity.nci != Long.MAX_VALUE) {
+                            put("nci", identity.nci)
+                        }
                     }
                 }
 

@@ -6,17 +6,18 @@ This directory contains the processed smartphone measurements obtained during th
 
 - `Altair_measurements_aligned.csv`: Processed crowdsensing measurements grouped by smartphone and measurement interval.
 - `nemo_measurements_aligned.csv`: Processed reference measurements collected by the Anite NEMO Invex system, aligned to the same time intervals for direct comparison.
-- `filtering.ipynb`: Jupyter Notebook containing the data filtering and processing steps for the Altair and NEMO measurements.
+- `FILTERING.ipynb`: Jupyter Notebook containing the data filtering and processing steps for the Altair and NEMO measurements.
 
 ## Dataset structure
 
 Each row represents the measurements collected by one smartphone or the reference system during a specific acquisition interval.
 
-Both datasets contain the following columns:
+The files have slightly different headers: `deviceModel` appears only in the smartphone dataset, and `N°_Samples` appears only in the NEMO dataset. The remaining columns are shared:
 
 | Column | Description | Unit |
 |---|---|---|
-| deviceModel | Anonymized label assigned to the smartphone, or "NEMO" for the reference system | — |
+| deviceModel | Anonymized smartphone label (Altair dataset only) | — |
+| N°_Samples | Number of reference observations in the interval (NEMO dataset only) | Samples |
 | interval | Measurement interval identifier and acquisition time range | — |
 | rsrq_mean | Mean Reference Signal Received Quality | dB |
 | rsrq_std | Standard deviation of RSRQ | dB |
