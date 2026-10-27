@@ -8,9 +8,14 @@ This directory contains the processed smartphone measurements obtained during th
 - `nemo_measurements_aligned.csv`: Processed reference measurements collected by the Anite NEMO Invex system, aligned to the same time intervals for direct comparison.
 - `FILTERING.ipynb`: Jupyter Notebook containing the data filtering and processing steps for the Altair and NEMO measurements.
 
+## Raw data samples
+
+- `raw data Brand C model 1.csv`: Campaign sample collected with Altair v0.9.0 (34 columns).
+- `raw data Brand C model 2.csv`: Additional sample captured with Altair v1.1.0 (90 fields per record), not used in the experimental results.
+
 ## Dataset structure
 
-Each row represents the measurements collected by one smartphone or the reference system during a specific acquisition interval.
+In the processed datasets, each row represents the measurements collected by one smartphone or the reference system during a specific acquisition interval.
 
 The files have slightly different headers: `deviceModel` appears only in the smartphone dataset, and `N°_Samples` appears only in the NEMO dataset. The remaining columns are shared:
 
