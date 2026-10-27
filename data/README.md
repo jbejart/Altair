@@ -10,8 +10,8 @@ This directory contains the processed smartphone measurements obtained during th
 
 ## Raw data samples
 
-- `raw data Brand C model 1.csv`: Campaign sample collected with Altair v0.9.0 (34 columns).
-- `raw data Brand C model 2.csv`: Additional sample captured with Altair v1.1.0 (90 fields per record), not used in the experimental results.
+- `raw data Brand C model 1.csv`: Altair v0.9.0 collects 34 columns, including GPS, RSSI, RSRP, and RSRQ.
+- `raw data Brand C model 2.csv`: Altair v1.1.0 exports 90 fields per record, adding more radio, network, and device information. This sample was not used in the experimental results.
 
 Direct user identifiers in the Brand C model 1 sample have been replaced with `anon`; measurement values are unchanged.
 
