@@ -13,6 +13,8 @@ This directory contains the processed smartphone measurements obtained during th
 - `raw data Brand C model 1.csv`: Campaign sample collected with Altair v0.9.0 (34 columns).
 - `raw data Brand C model 2.csv`: Additional sample captured with Altair v1.1.0 (90 fields per record), not used in the experimental results.
 
+Direct user identifiers in the Brand C model 1 sample have been replaced with `anon`; measurement values are unchanged.
+
 ## Dataset structure
 
 In the processed datasets, each row represents the measurements collected by one smartphone or the reference system during a specific acquisition interval.

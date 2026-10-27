@@ -133,19 +133,21 @@ Altair is not intended to replace calibrated professional drive-test equipment. 
 
 ## Version
 
-The current software release is:
+The current repository release is:
 
 ```text
-v1.1.0
+v1.1.1
 ```
 
-Version v1.1.0 is available as a [GitHub release](https://github.com/jbejart/Altair/releases/tag/v1.1.0) and permanently archived in [Zenodo](https://doi.org/10.5281/zenodo.23653192).
+Release v1.1.1 updates the datasets and documentation; the application code remains unchanged from v1.1.0.
+
+The preceding release, v1.1.0, is permanently archived in [Zenodo](https://doi.org/10.5281/zenodo.23653192). The DOI for v1.1.1 will be added after its Zenodo record is available.
 
 ## Citation
 
 If you use Altair in academic work, please cite the software and the associated SoftwareX publication.
 
-Software DOI for v1.1.0:
+Archived software DOI for v1.1.0 (preceding release):
 
 https://doi.org/10.5281/zenodo.23653192
 
